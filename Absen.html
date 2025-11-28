@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Absensi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e, #fecfef, #fecfef); /* Gradien pink-ungu cerah */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: linear-gradient(135deg, #667eea, #764ba2); /* Gradien biru-ungu */
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+            color: white;
+        }
+        h1 {
+            text-align: center;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #ffeaa7; /* Kuning cerah */
+        }
+        input, select, button {
+            margin-bottom: 20px;
+            padding: 12px;
+            border: 2px solid #ffeaa7; /* Border kuning */
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparan putih */
+            color: #333;
+        }
+        input:focus, select:focus {
+            border-color: #fd79a8; /* Pink cerah saat fokus */
+            outline: none;
+        }
+        .status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status input[type="radio"] {
+            margin-right: 5px;
+        }
+        .status label {
+            margin-right: 20px;
+            color: #ffeaa7;
+        }
+        button {
+            background: linear-gradient(135deg, #00b894, #00cec9); /* Gradien hijau-biru laut */
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        #absensiList {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        #absensiList li {
+            background: rgba(255, 255, 255, 0.8);
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            color: #333;
+        }
+        #downloadBtn {
+            background: linear-gradient(135deg, #e17055, #fdcb6e); /* Gradien oranye-kuning */
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Form Absensi</h1>
+        <form id="absensiForm">
+            <label for="nama">Nama:</label>
+            <input type="text" id="nama" name="nama" required>
+            
+            <label>Status:</label>
+            <div class="status">
+                <input type="radio" id="hadir" name="status" value="hadir" required>
+                <label for="hadir">Hadir</label>
+                <input type="radio" id="tidak" name="status" value="tidak">
+                <label for="tidak">Tidak Hadir</label>
+            </div>
+            
+            <button type="submit">Tambah Absensi</button>
+        </form>
+        
+        <h2>Daftar Absensi</h2>
+        <ul id="absensiList"></ul>
+        
+        <button id="downloadBtn">Download sebagai CSV</button>
+    </div>
+    
+    <script>
+        // Fungsi untuk memuat absensi dari localStorage
+        function loadAbsensi() {
+            const absensi = JSON.parse(localStorage.getItem('absensi')) || [];
+            const list = document.getElementById('absensiList');
+            list.innerHTML = '';
+            absensi.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.nama}: ${item.status}`;
+                list.appendChild(li);
+            });
+        }
+        
+        // Fungsi untuk menyimpan absensi ke localStorage
+        function saveAbsensi(absensi) {
+            localStorage.setItem('absensi', JSON.stringify(absensi));
+        }
+        
+        // Event listener untuk form submit
+        document.getElementById('absensiForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nama = document.getElementById('nama').value;
+            const status = document.querySelector('input[name="status"]:checked').value;
+            
+            const absensi = JSON.parse(localStorage.getItem('absensi')) || [];
+            absensi.push({ nama, status });
+            saveAbsensi(absensi);
+            
+            // Reset form dan reload list
+            document.getElementById('nama').value = '';
+            document.querySelector('input[name="status"]:checked').checked = false;
+            loadAbsensi();
+        });
+        
+        // Event listener untuk download CSV
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const absensi = JSON.parse(localStorage.getItem('absensi')) || [];
+            if (absensi.length === 0) {
+                alert('Tidak ada data absensi untuk diunduh.');
+                return;
+            }
+            
+            let csv = 'Nama,Status\n';
+            absensi.forEach(item => {
+                csv += `${item.nama},${item.status}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'absensi.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+        
+        // Load absensi saat halaman dimuat
+        loadAbsensi();
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
